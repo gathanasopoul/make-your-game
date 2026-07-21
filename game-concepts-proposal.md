@@ -1,6 +1,3 @@
-# Game Concept Proposals
-
-Based on the project requirements—maintaining a strict 60 FPS, using plain JS/DOM, utilizing minimal layers, and avoiding canvas/frameworks—here are two highly optimized concepts. Both fit the pre-approved genre list while bringing a fresh, engaging theme.
 
 ## Concept 1: "System Override" (Space Invaders Reskin)
 
@@ -16,20 +13,6 @@ Based on the project requirements—maintaining a strict 60 FPS, using plain JS/
 * **Timer:** "Time until Total System Failure"
 
 ---
-
-## Concept 2: "Warehouse Night Shift" (Tetris Reskin)
-
-**The Vibe:** You are an automated forklift operator in an endless shipping warehouse. You must organize differently shaped delivery crates into the tightest possible configurations before the delivery truck leaves.
-
-### Why it works for DOM Performance:
-* **No Continuous Animation:** Tetris is strictly grid-based. Elements move in fixed, discrete steps rather than continuous pixel-by-pixel animation.
-* **Zero DOM Movement:** You don't actually need to use CSS `transform` to move `<div>` tags around. You can render a static HTML grid of `<div>` cells once at startup. The game logic just updates a 2D array in JavaScript, and the rendering loop simply changes the CSS background colors or classes of those static grid cells. This is incredibly lightweight and guarantees practically zero frame drops.
-
-### UI Integration:
-* **Score:** "Packages Shipped"
-* **Lives:** "Strikes (3 strikes and you're fired!)"
-* **Timer:** "End of Shift Countdown"
-
 ---
 
 ## Core Technical Requirements to Remember
