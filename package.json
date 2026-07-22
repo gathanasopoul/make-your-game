@@ -1,0 +1,23 @@
+{
+  "name": "make-your-game",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Welcome to the repository for **System Override**, our high-performance, vanilla JavaScript, DOM-based game.",
+  "main": "game.js",
+  "scripts": {
+    "lint": "eslint ./**/*.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://platform.zone01.gr/git/gathanasopoul/make-your-game"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0"
+  }
+}

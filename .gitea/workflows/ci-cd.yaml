@@ -1,0 +1,32 @@
+name: Make Your Game CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Lint JavaScript
+        run: npm run lint
+
+      - name: Build Docker Image (Dry Run / Validation)
+        run: |
+          docker build -t make-your-game:latest .
