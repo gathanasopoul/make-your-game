@@ -25,6 +25,9 @@ jobs:
       - name: Lint JavaScript
         run: npm run lint
 
+      - name: Run Tests
+        run: npm run test
+
       - name: Build Docker Image (Dry Run / Validation)
         run: |
           docker build -t make-your-game:latest .
