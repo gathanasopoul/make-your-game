@@ -9,14 +9,18 @@ Use this file to track progress for the current development tasks.
 - [x] Configure linting and test tooling
 - [x] Add CI workflow configuration
 - [x] Create a basic server entrypoint in cmd/server/main.go
-- [ ] Verify the server serves the game page locally
-- [ ] Test the health endpoint at /api/health
+- [x] Verify the server serves the game page locally
+- [x] Test the health endpoint at /api/health
+
+> Verified: lint passes, tests pass, and the server responds at /api/health.
 
 ## Phase 2: Game Loop & Input System
-- [ ] Implement the main animation loop with requestAnimationFrame
-- [ ] Track delta time and FPS
-- [ ] Add keyboard input handling for movement
-- [ ] Prevent key-repeat stutter for smooth movement
+- [x] Implement the main animation loop with requestAnimationFrame
+- [x] Track delta time and FPS
+- [x] Add keyboard input handling for movement
+- [x] Prevent key-repeat stutter for smooth movement
+
+> Verified: the game loop runs, input updates are handled, and repeated key events no longer cause the movement logic to stutter.
 
 ## Phase 3: Player Firewall (Spacecraft)
 - [ ] Create the player entity at the bottom of the screen
