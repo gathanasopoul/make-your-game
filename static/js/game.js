@@ -24,6 +24,8 @@ export class Game {
         const spacingX = 60;
         const spacingY = 60;
 
+        this.enemySpeed = 100;
+
         for (let row = 0; row < rows; row++) {
             for (let column = 0; column < columns; column++) {
                 const x = startX + column * spacingX;
@@ -68,6 +70,11 @@ export class Game {
         }
 
         this.player.move(dx, dy, dt);
+
+        // Move enemy fleet
+        for (const enemy of this.enemies) {
+             enemy.move(this.enemySpeed * dt);
+        } 
 
         this.render();
     }

@@ -17,6 +17,11 @@ export class Enemy {
         this.render();
     }
 
+    // Move enemy
+    move(dx) {
+        this.x += dx;
+    }
+
     // Render enemy
     render() {
         this.element.style.transform =
