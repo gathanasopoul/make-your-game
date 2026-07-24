@@ -8,12 +8,28 @@ export class Game {
 
         this.player = new Player(world);
 
+        this.enemyPool = [];
         this.enemies = [];
 
+        // Enemy movement settings
+        this.enemySpeed = 100;
+        this.enemyDirection = 1;
+        this.enemyDropDistance = 30;
+
+        this.createEnemyPool();
         this.createEnemyGrid();
     }
 
-    // Create enemy formation
+    // Create reusable enemy pool
+    createEnemyPool() {
+        const poolSize = 24;
+
+        for (let i = 0; i < poolSize; i++) {
+            this.enemyPool.push(new Enemy(this.world));
+        }
+    }
+
+    // Activate enemies from pool
     createEnemyGrid() {
         const rows = 3;
         const columns = 8;
@@ -24,55 +40,60 @@ export class Game {
         const spacingX = 60;
         const spacingY = 60;
 
-        this.enemySpeed = 100;
-        this.enemyDirection = 1;
-        this.enemyDropDistance = 30;
+        let index = 0;
 
         for (let row = 0; row < rows; row++) {
             for (let column = 0; column < columns; column++) {
-                const x = startX + column * spacingX;
-                const y = startY + row * spacingY;
+                const enemy = this.enemyPool[index++];
 
-                this.enemies.push(
-                    new Enemy(this.world, x, y),
+                enemy.activate(
+                    startX + column * spacingX,
+                    startY + row * spacingY,
                 );
+
+                this.enemies.push(enemy);
             }
         }
     }
 
     // Move enemy fleet
     moveEnemies(dt) {
-    let reachedEdge = false;
-
-    for (const enemy of this.enemies) {
-        const nextX =
-            enemy.x + this.enemySpeed * this.enemyDirection * dt;
-
-        if (
-            nextX <= 0 ||
-            nextX + enemy.width >= this.world.clientWidth
-        ) {
-            reachedEdge = true;
-            break;
-        }
-    }
-
-    if (reachedEdge) {
-        this.enemyDirection *= -1;
+        let reachedEdge = false;
 
         for (const enemy of this.enemies) {
-            enemy.move(0, this.enemyDropDistance);
+            const nextX =
+                enemy.x +
+                this.enemySpeed *
+                this.enemyDirection *
+                dt;
+
+            if (
+                nextX <= 0 ||
+                nextX + enemy.width >= this.world.clientWidth
+            ) {
+                reachedEdge = true;
+                break;
+            }
         }
 
-        return;
-    }
+        if (reachedEdge) {
+            this.enemyDirection *= -1;
 
-    for (const enemy of this.enemies) {
-        enemy.move(
-            this.enemySpeed * this.enemyDirection * dt,
-        );
+            for (const enemy of this.enemies) {
+                enemy.move(0, this.enemyDropDistance);
+            }
+
+            return;
+        }
+
+        for (const enemy of this.enemies) {
+            enemy.move(
+                this.enemySpeed *
+                this.enemyDirection *
+                dt,
+            );
+        }
     }
-}
 
     // Update game state
     update(dt) {
