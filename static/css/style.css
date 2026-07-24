@@ -47,3 +47,16 @@ body {
 
     will-change: transform;
 }
+
+/* Enemy */
+
+.enemy {
+    position: absolute;
+
+    width: 40px;
+    height: 40px;
+
+    background: #d32f2f;
+
+    border-radius: 4px;
+}

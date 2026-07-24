@@ -1,4 +1,5 @@
 import { Player } from "./player.js";
+import { Enemy } from "./enemy.js";
 
 export class Game {
     constructor(world, input) {
@@ -6,6 +7,33 @@ export class Game {
         this.input = input;
 
         this.player = new Player(world);
+
+        this.enemies = [];
+
+        this.createEnemyGrid();
+    }
+
+    // Create enemy formation
+    createEnemyGrid() {
+        const rows = 3;
+        const columns = 8;
+
+        const startX = 80;
+        const startY = 60;
+
+        const spacingX = 60;
+        const spacingY = 60;
+
+        for (let row = 0; row < rows; row++) {
+            for (let column = 0; column < columns; column++) {
+                const x = startX + column * spacingX;
+                const y = startY + row * spacingY;
+
+                this.enemies.push(
+                    new Enemy(this.world, x, y),
+                );
+            }
+        }
     }
 
     // Update game state
@@ -47,5 +75,9 @@ export class Game {
     // Render game
     render() {
         this.player.render();
+
+        for (const enemy of this.enemies) {
+            enemy.render();
+        }
     }
 }
