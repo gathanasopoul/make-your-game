@@ -11,40 +11,35 @@ export class Game {
         this.enemyPool = [];
         this.enemies = [];
 
-        // Enemy movement settings
         this.enemySpeed = 100;
         this.enemyDirection = 1;
         this.enemyDropDistance = 30;
+        this.enemyRows = 3;
+        this.enemyColumns = 8;
 
         this.createEnemyPool();
         this.createEnemyGrid();
     }
 
-    // Create reusable enemy pool
     createEnemyPool() {
-        const poolSize = 24;
+        const poolSize = this.enemyRows * this.enemyColumns;
 
         for (let i = 0; i < poolSize; i++) {
             this.enemyPool.push(new Enemy(this.world));
         }
     }
 
-    // Activate enemies from pool
     createEnemyGrid() {
-        const rows = 3;
-        const columns = 8;
-
         const startX = 80;
         const startY = 60;
-
         const spacingX = 60;
         const spacingY = 60;
 
-        let index = 0;
+        this.enemies = [];
 
-        for (let row = 0; row < rows; row++) {
-            for (let column = 0; column < columns; column++) {
-                const enemy = this.enemyPool[index++];
+        for (let row = 0; row < this.enemyRows; row++) {
+            for (let column = 0; column < this.enemyColumns; column++) {
+                const enemy = this.enemyPool[row * this.enemyColumns + column];
 
                 enemy.activate(
                     startX + column * spacingX,
@@ -56,21 +51,13 @@ export class Game {
         }
     }
 
-    // Move enemy fleet
     moveEnemies(dt) {
         let reachedEdge = false;
 
         for (const enemy of this.enemies) {
-            const nextX =
-                enemy.x +
-                this.enemySpeed *
-                this.enemyDirection *
-                dt;
+            const nextX = enemy.x + this.enemySpeed * this.enemyDirection * dt;
 
-            if (
-                nextX <= 0 ||
-                nextX + enemy.width >= this.world.clientWidth
-            ) {
+            if (nextX <= 0 || nextX + enemy.width >= this.world.clientWidth) {
                 reachedEdge = true;
                 break;
             }
@@ -87,20 +74,14 @@ export class Game {
         }
 
         for (const enemy of this.enemies) {
-            enemy.move(
-                this.enemySpeed *
-                this.enemyDirection *
-                dt,
-            );
+            enemy.move(this.enemySpeed * this.enemyDirection * dt);
         }
     }
 
-    // Update game state
     update(dt) {
         let dx = 0;
         let dy = 0;
 
-        // Horizontal input
         if (this.input.isPressed("ArrowLeft")) {
             dx--;
         }
@@ -109,7 +90,6 @@ export class Game {
             dx++;
         }
 
-        // Vertical input
         if (this.input.isPressed("ArrowUp")) {
             dy--;
         }
@@ -118,7 +98,6 @@ export class Game {
             dy++;
         }
 
-        // Normalize diagonal movement
         if (dx !== 0 && dy !== 0) {
             const length = Math.hypot(dx, dy);
 
@@ -127,13 +106,10 @@ export class Game {
         }
 
         this.player.move(dx, dy, dt);
-
         this.moveEnemies(dt);
-
         this.render();
     }
 
-    // Render game
     render() {
         this.player.render();
 
