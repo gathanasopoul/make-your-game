@@ -12,7 +12,7 @@ export class Game {
             speed: 250,
         };
 
-        // Create player element
+        // Create player
         this.playerElement = document.createElement("div");
         this.playerElement.className = "player";
 
@@ -21,11 +21,12 @@ export class Game {
         this.render();
     }
 
-    // Update player position
+    // Update game state
     update(dt) {
         let dx = 0;
         let dy = 0;
 
+        // Horizontal input
         if (this.input.isPressed("ArrowLeft")) {
             dx--;
         }
@@ -34,6 +35,7 @@ export class Game {
             dx++;
         }
 
+        // Vertical input
         if (this.input.isPressed("ArrowUp")) {
             dy--;
         }
@@ -42,10 +44,18 @@ export class Game {
             dy++;
         }
 
+        // Normalize diagonal movement
+        if (dx !== 0 && dy !== 0) {
+            const length = Math.hypot(dx, dy);
+            dx /= length;
+            dy /= length;
+        }
+
+        // Move player
         this.player.x += dx * this.player.speed * dt;
         this.player.y += dy * this.player.speed * dt;
 
-        // Keep player inside game area
+        // Keep inside world
         this.player.x = Math.max(
             0,
             Math.min(
