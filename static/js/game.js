@@ -16,12 +16,6 @@ export class Game {
         this.playerElement = document.createElement("div");
         this.playerElement.className = "player";
 
-        this.playerElement.style.position = "absolute";
-        this.playerElement.style.width = `${this.player.width}px`;
-        this.playerElement.style.height = `${this.player.height}px`;
-        this.playerElement.style.background = "#4CAF50";
-        this.playerElement.style.borderRadius = "4px";
-
         this.world.appendChild(this.playerElement);
 
         this.render();

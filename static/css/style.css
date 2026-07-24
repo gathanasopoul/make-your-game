@@ -32,3 +32,18 @@ body {
     height: 100%;
     position: relative;
 }
+
+/* Player */
+
+.player {
+    position: absolute;
+
+    width: 40px;
+    height: 40px;
+
+    background: #4CAF50;
+
+    border-radius: 4px;
+
+    will-change: transform;
+}
