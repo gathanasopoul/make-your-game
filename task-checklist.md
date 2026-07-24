@@ -23,10 +23,10 @@ Use this file to track progress for the current development tasks.
 > Verified: the game loop runs, input updates are handled, and repeated key events no longer cause the movement logic to stutter.
 
 ## Phase 3: Player Firewall (Spacecraft)
-- [ ] Create the player entity at the bottom of the screen
-- [ ] Center the player horizontally
-- [ ] Move the player using the input system
-- [ ] Keep the player within screen boundaries
+- [x] Create the player entity at the bottom of the screen
+- [x] Center the player horizontally
+- [x] Move the player using the input system
+- [x] Keep the player within screen boundaries
 
 ## Phase 4: Enemy Malware & Object Pooling
 - [ ] Create the malware grid layout
