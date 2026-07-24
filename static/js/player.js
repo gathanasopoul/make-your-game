@@ -2,13 +2,14 @@ export class Player {
     constructor(world) {
         this.world = world;
 
-        this.x = 380;
-        this.y = 280;
-
         this.width = 40;
         this.height = 40;
 
         this.speed = 250;
+
+        // Start at bottom center
+        this.x = (this.world.clientWidth - this.width) / 2;
+        this.y = this.world.clientHeight - this.height - 20;
 
         // Create player element
         this.element = document.createElement("div");
@@ -24,6 +25,7 @@ export class Player {
         this.x += dx * this.speed * dt;
         this.y += dy * this.speed * dt;
 
+        // Keep inside game area
         this.x = Math.max(
             0,
             Math.min(this.x, this.world.clientWidth - this.width),
