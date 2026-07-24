@@ -1,14 +1,14 @@
 import { InputHandler } from "./input.js";
 import { Game } from "./game.js";
 
-const canvas = document.getElementById("gameCanvas");
+const container = document.getElementById("game-container");
 
-if (!canvas) {
-    throw new Error("Game canvas not found");
+if (!container) {
+    throw new Error("Game container not found");
 }
 
 const input = new InputHandler();
-const game = new Game(canvas, input);
+const game = new Game(container, input);
 
 let lastTime = 0;
 
