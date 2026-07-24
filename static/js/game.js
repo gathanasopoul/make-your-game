@@ -1,45 +1,144 @@
+import { Player } from "./player.js";
+import { Enemy } from "./enemy.js";
+
 export class Game {
-    constructor(canvas, input) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext("2d");
+    constructor(world, input) {
+        this.world = world;
         this.input = input;
 
-        // Player entity initial state
-        this.player = {
-            x: canvas.width / 2 - 25,
-            y: canvas.height / 2 - 25,
-            width: 50,
-            height: 50,
-            speed: 300 // pixels per second
-        };
+        this.player = new Player(world);
+
+        this.enemyPool = [];
+        this.enemies = [];
+
+        // Enemy movement settings
+        this.enemySpeed = 100;
+        this.enemyDirection = 1;
+        this.enemyDropDistance = 30;
+
+        this.createEnemyPool();
+        this.createEnemyGrid();
     }
 
+    // Create reusable enemy pool
+    createEnemyPool() {
+        const poolSize = 24;
+
+        for (let i = 0; i < poolSize; i++) {
+            this.enemyPool.push(new Enemy(this.world));
+        }
+    }
+
+    // Activate enemies from pool
+    createEnemyGrid() {
+        const rows = 3;
+        const columns = 8;
+
+        const startX = 80;
+        const startY = 60;
+
+        const spacingX = 60;
+        const spacingY = 60;
+
+        let index = 0;
+
+        for (let row = 0; row < rows; row++) {
+            for (let column = 0; column < columns; column++) {
+                const enemy = this.enemyPool[index++];
+
+                enemy.activate(
+                    startX + column * spacingX,
+                    startY + row * spacingY,
+                );
+
+                this.enemies.push(enemy);
+            }
+        }
+    }
+
+    // Move enemy fleet
+    moveEnemies(dt) {
+        let reachedEdge = false;
+
+        for (const enemy of this.enemies) {
+            const nextX =
+                enemy.x +
+                this.enemySpeed *
+                this.enemyDirection *
+                dt;
+
+            if (
+                nextX <= 0 ||
+                nextX + enemy.width >= this.world.clientWidth
+            ) {
+                reachedEdge = true;
+                break;
+            }
+        }
+
+        if (reachedEdge) {
+            this.enemyDirection *= -1;
+
+            for (const enemy of this.enemies) {
+                enemy.move(0, this.enemyDropDistance);
+            }
+
+            return;
+        }
+
+        for (const enemy of this.enemies) {
+            enemy.move(
+                this.enemySpeed *
+                this.enemyDirection *
+                dt,
+            );
+        }
+    }
+
+    // Update game state
     update(dt) {
-        // Move player based on inputs using Delta Time
-        if (this.input.isPressed("KeyW") || this.input.isPressed("ArrowUp")) {
-            this.player.y -= this.player.speed * dt;
-        }
-        if (this.input.isPressed("KeyS") || this.input.isPressed("ArrowDown")) {
-            this.player.y += this.player.speed * dt;
-        }
-        if (this.input.isPressed("KeyA") || this.input.isPressed("ArrowLeft")) {
-            this.player.x -= this.player.speed * dt;
-        }
-        if (this.input.isPressed("KeyD") || this.input.isPressed("ArrowRight")) {
-            this.player.x += this.player.speed * dt;
+        let dx = 0;
+        let dy = 0;
+
+        // Horizontal input
+        if (this.input.isPressed("ArrowLeft")) {
+            dx--;
         }
 
-        // Clamp player inside canvas bounds
-        this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
-        this.player.y = Math.max(0, Math.min(this.canvas.height - this.player.height, this.player.y));
+        if (this.input.isPressed("ArrowRight")) {
+            dx++;
+        }
+
+        // Vertical input
+        if (this.input.isPressed("ArrowUp")) {
+            dy--;
+        }
+
+        if (this.input.isPressed("ArrowDown")) {
+            dy++;
+        }
+
+        // Normalize diagonal movement
+        if (dx !== 0 && dy !== 0) {
+            const length = Math.hypot(dx, dy);
+
+            dx /= length;
+            dy /= length;
+        }
+
+        this.player.move(dx, dy, dt);
+
+        this.moveEnemies(dt);
+
+        this.render();
     }
 
+    // Render game
     render() {
-        // 1. Clear frame
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.player.render();
 
-        // 2. Draw Player
-        this.ctx.fillStyle = "#00ffcc";
-        this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+        for (const enemy of this.enemies) {
+            enemy.render();
+        }
     }
 }
