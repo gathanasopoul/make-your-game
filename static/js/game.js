@@ -25,6 +25,8 @@ export class Game {
         const spacingY = 60;
 
         this.enemySpeed = 100;
+        this.enemyDirection = 1;
+        this.enemyDropDistance = 30;
 
         for (let row = 0; row < rows; row++) {
             for (let column = 0; column < columns; column++) {
@@ -37,6 +39,40 @@ export class Game {
             }
         }
     }
+
+    // Move enemy fleet
+    moveEnemies(dt) {
+    let reachedEdge = false;
+
+    for (const enemy of this.enemies) {
+        const nextX =
+            enemy.x + this.enemySpeed * this.enemyDirection * dt;
+
+        if (
+            nextX <= 0 ||
+            nextX + enemy.width >= this.world.clientWidth
+        ) {
+            reachedEdge = true;
+            break;
+        }
+    }
+
+    if (reachedEdge) {
+        this.enemyDirection *= -1;
+
+        for (const enemy of this.enemies) {
+            enemy.move(0, this.enemyDropDistance);
+        }
+
+        return;
+    }
+
+    for (const enemy of this.enemies) {
+        enemy.move(
+            this.enemySpeed * this.enemyDirection * dt,
+        );
+    }
+}
 
     // Update game state
     update(dt) {
@@ -71,10 +107,7 @@ export class Game {
 
         this.player.move(dx, dy, dt);
 
-        // Move enemy fleet
-        for (const enemy of this.enemies) {
-             enemy.move(this.enemySpeed * dt);
-        } 
+        this.moveEnemies(dt);
 
         this.render();
     }

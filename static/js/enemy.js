@@ -18,9 +18,10 @@ export class Enemy {
     }
 
     // Move enemy
-    move(dx) {
+    move(dx, dy = 0) {
         this.x += dx;
-    }
+        this.y += dy;
+}
 
     // Render enemy
     render() {
