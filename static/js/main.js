@@ -1,26 +1,30 @@
 import { InputHandler } from "./input.js";
 import { Game } from "./game.js";
 
-const canvas = document.getElementById("gameCanvas");
+const world = document.getElementById("game-world");
 
-if (!canvas) {
-    throw new Error("Game canvas not found");
+if (!world) {
+    throw new Error("Game world not found");
 }
 
 const input = new InputHandler();
-const game = new Game(canvas, input);
+
+const game = new Game(world, input);
 
 let lastTime = 0;
 
 function gameLoop(timestamp) {
+
     if (!lastTime) {
         lastTime = timestamp;
     }
 
     const dt = (timestamp - lastTime) / 1000;
+
     lastTime = timestamp;
 
     game.update(dt);
+
     game.render();
 
     requestAnimationFrame(gameLoop);
