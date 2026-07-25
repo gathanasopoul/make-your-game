@@ -60,3 +60,16 @@ body {
 
     border-radius: 4px;
 }
+
+/* Projectile */
+
+.projectile {
+    position: absolute;
+
+    width: 6px;
+    height: 14px;
+
+    background: #ffd54f;
+
+    border-radius: 3px;
+}
