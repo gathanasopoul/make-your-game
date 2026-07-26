@@ -49,12 +49,16 @@ Use this file to track progress for the current development tasks.
 > Verified: score tracking, system integrity, countdown timer, and victory/game-over states are fully functional and covered by unit tests.
 
 ## Phase 7: Pause & Polish
-- [ ] Add pause menu and pause state handling
-- [ ] Ensure paused gameplay does not continue updating
-- [ ] Perform performance checks for smooth 60 FPS gameplay
+- [x] Add pause menu and pause state handling
+- [x] Ensure paused gameplay does not continue updating
+- [x] Perform performance checks for smooth 60 FPS gameplay
+
+> Verified: pause toggle (P/ESC), paused state freezing, and system restart (R) are fully operational and verified by unit tests.
 
 ## Phase 8: Verification & Done Criteria
-- [ ] Run linting locally
-- [ ] Run tests locally
-- [ ] Verify the game runs without errors
-- [ ] Confirm the project is ready for review
+- [x] Run linting locally
+- [x] Run tests locally
+- [x] Verify the game runs without errors
+- [x] Confirm the project is ready for review
+
+> Verified: all 13 unit tests pass and ESLint runs clean with 0 errors.

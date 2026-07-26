@@ -198,8 +198,59 @@ export class Game {
         }
     }
 
+    togglePause() {
+        if (this.state === "PLAYING") {
+            this.state = "PAUSED";
+        } else if (this.state === "PAUSED") {
+            this.state = "PLAYING";
+        }
+    }
+
+    restart() {
+        this.state = "PLAYING";
+        this.score = 0;
+        this.integrity = 100;
+        this.timer = 60;
+        this.fireTimer = 0;
+        this.enemyDirection = 1;
+        this.enemySpeed = 100;
+
+        // Deactivate projectiles
+        for (const projectile of this.projectiles) {
+            projectile.deactivate();
+        }
+        this.projectiles = [];
+
+        // Deactivate existing enemies and rebuild grid
+        for (const enemy of this.enemies) {
+            enemy.deactivate();
+        }
+        this.createEnemyGrid();
+
+        // Reset player position
+        const worldWidth = this.getWorldWidth();
+        const worldHeight = this.getWorldHeight();
+        this.player.x = (worldWidth - this.player.width) / 2;
+        this.player.y = worldHeight - this.player.height - 20;
+
+        this.render();
+    }
+
     update(dt) {
+        const isJustPressed = (code) =>
+            typeof this.input.isJustPressed === "function" && this.input.isJustPressed(code);
+
+        if (isJustPressed("Escape") || isJustPressed("KeyP")) {
+            this.togglePause();
+        }
+
+        if (isJustPressed("KeyR") || (this.state !== "PLAYING" && this.input.isPressed("KeyR"))) {
+            this.restart();
+            return;
+        }
+
         if (this.state !== "PLAYING") {
+            this.render();
             return;
         }
 
@@ -293,12 +344,27 @@ export class Game {
             }
         }
 
-        if (this.state === "VICTORY") {
+        if (this.state === "PAUSED") {
+            this.overlayElement.className = "game-overlay paused";
+            this.overlayElement.innerHTML = `
+                <h1>SYSTEM PAUSED</h1>
+                <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.togglePause()">Resume [P / ESC]</button>
+                <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
+            `;
+        } else if (this.state === "VICTORY") {
             this.overlayElement.className = "game-overlay victory";
-            this.overlayElement.innerHTML = `<h1>SYSTEM SECURED</h1><p>Final Recovered: ${this.score}MB</p>`;
+            this.overlayElement.innerHTML = `
+                <h1>SYSTEM SECURED</h1>
+                <p>Final Recovered: ${this.score}MB</p>
+                <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
+            `;
         } else if (this.state === "GAME_OVER") {
             this.overlayElement.className = "game-overlay game-over";
-            this.overlayElement.innerHTML = `<h1>SYSTEM COMPROMISED</h1><p>Score: ${this.score}MB</p>`;
+            this.overlayElement.innerHTML = `
+                <h1>SYSTEM COMPROMISED</h1>
+                <p>Score: ${this.score}MB</p>
+                <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
+            `;
         }
     }
 }

@@ -225,7 +225,7 @@ describe("phase 6 HUD & game logic", () => {
 
     try {
       const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
-      const game = new Game(world, { isPressed: () => false });
+      const game = new Game(world, { isPressed: () => false, isJustPressed: () => false });
 
       game.timer = 0.5;
       game.update(1.0);
@@ -236,4 +236,73 @@ describe("phase 6 HUD & game logic", () => {
     }
   });
 });
+
+describe("phase 7 pause & polish system", () => {
+  it("toggles pause state and freezes updates while paused", () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      createElement() {
+        return { style: {}, className: "", appendChild() {} };
+      }
+    };
+
+    try {
+      const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
+      let justPressedEscape = true;
+      const game = new Game(world, {
+        isPressed: () => false,
+        isJustPressed: (key) => {
+          if (key === "Escape" && justPressedEscape) {
+            justPressedEscape = false;
+            return true;
+          }
+          return false;
+        }
+      });
+
+      expect(game.state).toBe("PLAYING");
+
+      game.update(0.016);
+      expect(game.state).toBe("PAUSED");
+
+      const currentTimer = game.timer;
+      game.update(1.0);
+
+      // Timer should remain frozen while paused
+      expect(game.timer).toBe(currentTimer);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it("restarts game state cleanly when restart is invoked", () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      createElement() {
+        return { style: {}, className: "", appendChild() {} };
+      }
+    };
+
+    try {
+      const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
+      const game = new Game(world, { isPressed: () => false, isJustPressed: () => false });
+
+      game.score = 150;
+      game.integrity = 25;
+      game.timer = 12;
+      game.state = "GAME_OVER";
+
+      game.restart();
+
+      expect(game.state).toBe("PLAYING");
+      expect(game.score).toBe(0);
+      expect(game.integrity).toBe(100);
+      expect(game.timer).toBe(60);
+      expect(game.enemies).toHaveLength(24);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+});
+
 
