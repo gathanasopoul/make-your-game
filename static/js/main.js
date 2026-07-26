@@ -10,6 +10,9 @@ if (!world) {
 const input = new InputHandler();
 
 const game = new Game(world, input);
+if (typeof window !== "undefined") {
+    window.gameInstance = game;
+}
 
 let lastTime = 0;
 
