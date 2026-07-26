@@ -133,8 +133,107 @@ describe("phase 5 projectile system", () => {
 
       expect(projectile.active).toBe(false);
       expect(enemy.active).toBe(false);
+      expect(game.score).toBe(10);
     } finally {
       globalThis.document = originalDocument;
     }
   });
 });
+
+describe("phase 6 HUD & game logic", () => {
+  it("increments score on collision and decrements timer during update", () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      createElement() {
+        return { style: {}, className: "", appendChild() {} };
+      },
+      getElementById() {
+        return { textContent: "" };
+      }
+    };
+
+    try {
+      const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
+      const game = new Game(world, { isPressed: () => false });
+
+      expect(game.score).toBe(0);
+      expect(game.timer).toBe(60);
+
+      game.update(1.5);
+
+      expect(game.timer).toBe(58.5);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it("decreases integrity when enemy reaches bottom boundary", () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      createElement() {
+        return { style: {}, className: "", appendChild() {} };
+      }
+    };
+
+    try {
+      const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
+      const game = new Game(world, { isPressed: () => false });
+
+      const breachEnemy = game.enemies[0];
+      breachEnemy.y = 570; // 570 + 40 = 610 >= 600
+
+      game.moveEnemies(0.01);
+
+      expect(game.integrity).toBe(75);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it("transitions to VICTORY when all enemies are cleared", () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      createElement() {
+        return { style: {}, className: "", appendChild() {} };
+      }
+    };
+
+    try {
+      const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
+      const game = new Game(world, { isPressed: () => false });
+
+      for (const enemy of game.enemies) {
+        enemy.deactivate();
+      }
+      game.enemies = [];
+
+      game.update(0.016);
+
+      expect(game.state).toBe("VICTORY");
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it("transitions to GAME_OVER when timer reaches zero or integrity reaches zero", () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      createElement() {
+        return { style: {}, className: "", appendChild() {} };
+      }
+    };
+
+    try {
+      const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
+      const game = new Game(world, { isPressed: () => false });
+
+      game.timer = 0.5;
+      game.update(1.0);
+
+      expect(game.state).toBe("GAME_OVER");
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+});
+
