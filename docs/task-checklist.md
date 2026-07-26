@@ -35,10 +35,10 @@ Use this file to track progress for the current development tasks.
 - [x] Implement object pooling for efficient rendering
 
 ## Phase 5: Projectiles & Collision
-- [ ] Create projectile objects for data packets
-- [ ] Add firing logic with cooldown
-- [ ] Move projectiles upward in the game loop
-- [ ] Detect collisions between projectiles and enemies
+- [x] Create projectile objects for data packets
+- [x] Add firing logic with cooldown
+- [x] Move projectiles upward in the game loop
+- [x] Detect collisions between projectiles and enemies
 
 ## Phase 6: HUD & Game Logic
 - [x] Add score tracking

@@ -19,7 +19,7 @@ function gameLoop(timestamp) {
         lastTime = timestamp;
     }
 
-    const dt = (timestamp - lastTime) / 1000;
+    const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
 
     lastTime = timestamp;
 
