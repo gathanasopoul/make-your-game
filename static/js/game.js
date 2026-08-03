@@ -1,6 +1,7 @@
 import { Player } from "./player.js";
 import { Enemy } from "./enemy.js";
 import { Projectile } from "./projectile.js";
+import { updateOverlay } from "./overlay.js";
 
 export class Game {
     constructor(world, input) {
@@ -22,14 +23,23 @@ export class Game {
         this.fireCooldown = 0.25;
         this.fireTimer = 0;
 
-        // Phase 6: HUD & Game Logic state
-        this.state = "PLAYING";
+        this.enemyProjectilePool = [];
+        this.enemyProjectiles = [];
+        this.enemyFireTimer = 0.5;
+        this.enemyFireCooldown = 2.0;
+
+        // Phase 6 & Polish: HUD, Wave & Game Logic state
+        this.state = "START";
+        this.wave = 1;
         this.score = 0;
         this.integrity = 100;
         this.timer = 60;
         this.overlayElement = null;
 
         // Cached HUD DOM elements to avoid document.getElementById queries during render loop
+        this.waveEl = typeof globalThis.document !== "undefined" && globalThis.document.getElementById
+            ? globalThis.document.getElementById("wave-value")
+            : null;
         this.scoreEl = typeof globalThis.document !== "undefined" && globalThis.document.getElementById
             ? globalThis.document.getElementById("score-value")
             : null;
@@ -40,6 +50,7 @@ export class Game {
             ? globalThis.document.getElementById("timer-value")
             : null;
 
+        this.lastWave = -1;
         this.lastScore = -1;
         this.lastIntegrity = -1;
         this.lastTimer = -1;
@@ -47,6 +58,7 @@ export class Game {
         this.createEnemyPool();
         this.createEnemyGrid();
         this.createProjectilePool();
+        this.createEnemyProjectilePool();
     }
 
     createEnemyPool() {
@@ -87,6 +99,14 @@ export class Game {
         }
     }
 
+    createEnemyProjectilePool() {
+        const poolSize = 20;
+
+        for (let i = 0; i < poolSize; i++) {
+            this.enemyProjectilePool.push(new Projectile(this.world, true));
+        }
+    }
+
     fireProjectile() {
         if (this.fireTimer > 0 || this.state !== "PLAYING") {
             return;
@@ -102,8 +122,50 @@ export class Game {
         const y = this.player.y;
 
         projectile.activate(x, y);
-        this.projectiles.push(projectile);
+        if (!this.projectiles.includes(projectile)) {
+            this.projectiles.push(projectile);
+        }
         this.fireTimer = this.fireCooldown;
+    }
+
+    fireEnemyProjectile() {
+        if (this.state !== "PLAYING" || this.enemies.length === 0) {
+            return;
+        }
+
+        const activeEnemies = this.enemies.filter((enemy) => enemy.active);
+        if (activeEnemies.length === 0) {
+            return;
+        }
+
+        const projectile = this.enemyProjectilePool.find((item) => !item.active);
+        if (!projectile) {
+            return;
+        }
+
+        // Get bottom-most active enemy in each column to ensure clean front-line fire
+        const bottomEnemiesMap = {};
+        for (const enemy of activeEnemies) {
+            const colKey = Math.round(enemy.x);
+            if (!bottomEnemiesMap[colKey] || enemy.y > bottomEnemiesMap[colKey].y) {
+                bottomEnemiesMap[colKey] = enemy;
+            }
+        }
+        const bottomEnemies = Object.values(bottomEnemiesMap);
+        const shooter = bottomEnemies[Math.floor(Math.random() * bottomEnemies.length)];
+
+        const x = shooter.x + shooter.width / 2 - projectile.width / 2;
+        const y = shooter.y + shooter.height;
+
+        projectile.activate(x, y);
+        if (!this.enemyProjectiles.includes(projectile)) {
+            this.enemyProjectiles.push(projectile);
+        }
+
+        // Randomized interval between firings (0.8s to 2.4s, scaling faster per wave)
+        const minTime = Math.max(0.4, 0.9 - (this.wave - 1) * 0.1);
+        const maxTime = Math.max(0.8, 2.2 - (this.wave - 1) * 0.2);
+        this.enemyFireTimer = minTime + Math.random() * (maxTime - minTime);
     }
 
     updateProjectiles(dt) {
@@ -118,7 +180,20 @@ export class Game {
         }
     }
 
+    updateEnemyProjectiles(dt) {
+        for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
+            const projectile = this.enemyProjectiles[i];
+
+            if (!projectile.active) {
+                this.enemyProjectiles.splice(i, 1);
+            } else {
+                projectile.move(dt);
+            }
+        }
+    }
+
     checkCollisions() {
+        // 1. Projectiles vs Enemies
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             const projectile = this.projectiles[i];
 
@@ -147,6 +222,50 @@ export class Game {
                     this.enemies.splice(j, 1);
                     break;
                 }
+            }
+        }
+
+        // 2. Enemies vs Player ship & baseline contact
+        for (let j = this.enemies.length - 1; j >= 0; j--) {
+            const enemy = this.enemies[j];
+
+            if (!enemy.active) {
+                continue;
+            }
+
+            const hitPlayer =
+                enemy.x < this.player.x + this.player.width &&
+                enemy.x + enemy.width > this.player.x &&
+                enemy.y < this.player.y + this.player.height &&
+                enemy.y + enemy.height > this.player.y;
+
+            const reachedBaseline = enemy.y + enemy.height >= this.player.y;
+
+            if (hitPlayer || reachedBaseline) {
+                enemy.deactivate();
+                this.enemies.splice(j, 1);
+                this.integrity = Math.max(0, this.integrity - 25);
+            }
+        }
+
+        // 3. Enemy Projectiles vs Player ship
+        for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
+            const projectile = this.enemyProjectiles[i];
+
+            if (!projectile.active) {
+                continue;
+            }
+
+            const hitPlayer =
+                projectile.x < this.player.x + this.player.width &&
+                projectile.x + projectile.width > this.player.x &&
+                projectile.y < this.player.y + this.player.height &&
+                projectile.y + projectile.height > this.player.y;
+
+            if (hitPlayer) {
+                projectile.deactivate();
+                this.enemyProjectiles.splice(i, 1);
+                this.integrity = Math.max(0, this.integrity - 10);
             }
         }
     }
@@ -187,7 +306,7 @@ export class Game {
             enemy.move(this.enemySpeed * this.enemyDirection * dt);
         }
 
-        // Check if any enemy reached the bottom boundary
+        // Check if any enemy reached bottom of game world
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
             if (enemy.y + enemy.height >= worldHeight) {
@@ -196,6 +315,32 @@ export class Game {
                 this.integrity = Math.max(0, this.integrity - 25);
             }
         }
+    }
+
+    startGame() {
+        this.state = "PLAYING";
+    }
+
+    nextWave() {
+        this.wave++;
+        this.enemySpeed = Math.min(350, this.enemySpeed + 20);
+        this.timer = Math.min(99, this.timer + 20);
+        this.enemyFireTimer = 1.5;
+
+        for (const projectile of this.projectiles) {
+            projectile.deactivate();
+        }
+        this.projectiles = [];
+
+        for (const projectile of this.enemyProjectiles) {
+            projectile.deactivate();
+        }
+        this.enemyProjectiles = [];
+
+        for (const enemy of this.enemies) {
+            enemy.deactivate();
+        }
+        this.createEnemyGrid();
     }
 
     togglePause() {
@@ -208,10 +353,12 @@ export class Game {
 
     restart() {
         this.state = "PLAYING";
+        this.wave = 1;
         this.score = 0;
         this.integrity = 100;
         this.timer = 60;
         this.fireTimer = 0;
+        this.enemyFireTimer = 1.5;
         this.enemyDirection = 1;
         this.enemySpeed = 100;
 
@@ -220,6 +367,11 @@ export class Game {
             projectile.deactivate();
         }
         this.projectiles = [];
+
+        for (const projectile of this.enemyProjectiles) {
+            projectile.deactivate();
+        }
+        this.enemyProjectiles = [];
 
         // Deactivate existing enemies and rebuild grid
         for (const enemy of this.enemies) {
@@ -240,17 +392,32 @@ export class Game {
         const isJustPressed = (code) =>
             typeof this.input.isJustPressed === "function" && this.input.isJustPressed(code);
 
+        if (this.state === "WAVE_CLEAR") {
+            this.waveClearTimer -= dt;
+            if (this.waveClearTimer <= 0) {
+                this.nextWave();
+                this.state = "PLAYING";
+            }
+            return;
+        }
+
+        if (this.state === "START") {
+            if (isJustPressed("Space") || isJustPressed("Enter") || (typeof this.input.isPressed === "function" && this.input.isPressed("Space"))) {
+                this.startGame();
+            }
+            return;
+        }
+
         if (isJustPressed("Escape") || isJustPressed("KeyP")) {
             this.togglePause();
         }
 
-        if (isJustPressed("KeyR") || (this.state !== "PLAYING" && this.input.isPressed("KeyR"))) {
+        if (isJustPressed("KeyR")) {
             this.restart();
             return;
         }
 
         if (this.state !== "PLAYING") {
-            this.render();
             return;
         }
 
@@ -272,21 +439,27 @@ export class Game {
             this.fireTimer = Math.max(0, this.fireTimer - dt);
         }
 
+        if (this.enemyFireTimer > 0) {
+            this.enemyFireTimer = Math.max(0, this.enemyFireTimer - dt);
+        } else {
+            this.fireEnemyProjectile();
+        }
+
         this.timer = Math.max(0, this.timer - dt);
 
         this.player.move(dx, 0, dt);
         this.moveEnemies(dt);
         this.updateProjectiles(dt);
+        this.updateEnemyProjectiles(dt);
         this.checkCollisions();
 
         // Check state transitions
         if (this.integrity <= 0 || this.timer <= 0) {
             this.state = "GAME_OVER";
         } else if (this.enemies.length === 0 || this.enemies.every((e) => !e.active)) {
-            this.state = "VICTORY";
+            this.state = "WAVE_CLEAR";
+            this.waveClearTimer = 2.0;
         }
-
-        this.render();
     }
 
     render() {
@@ -300,11 +473,20 @@ export class Game {
             projectile.render();
         }
 
+        for (const projectile of this.enemyProjectiles) {
+            projectile.render();
+        }
+
         this.updateHUD();
         this.renderOverlay();
     }
 
     updateHUD() {
+        if (this.waveEl && this.wave !== this.lastWave) {
+            this.waveEl.textContent = this.wave;
+            this.lastWave = this.wave;
+        }
+
         if (this.scoreEl && this.score !== this.lastScore) {
             this.scoreEl.textContent = this.score;
             this.lastScore = this.score;
@@ -323,48 +505,12 @@ export class Game {
     }
 
     renderOverlay() {
-        if (typeof globalThis.document === "undefined" || !globalThis.document.createElement) {
-            return;
-        }
-
-        if (this.state === "PLAYING") {
-            if (this.overlayElement && this.overlayElement.parentNode) {
-                this.overlayElement.parentNode.removeChild(this.overlayElement);
-                this.overlayElement = null;
-            }
-
-            return;
-        }
-
-        if (!this.overlayElement) {
-            this.overlayElement = globalThis.document.createElement("div");
-            this.overlayElement.className = "game-overlay";
-            if (this.world.appendChild) {
-                this.world.appendChild(this.overlayElement);
-            }
-        }
-
-        if (this.state === "PAUSED") {
-            this.overlayElement.className = "game-overlay paused";
-            this.overlayElement.innerHTML = `
-                <h1>SYSTEM PAUSED</h1>
-                <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.togglePause()">Resume [P / ESC]</button>
-                <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
-            `;
-        } else if (this.state === "VICTORY") {
-            this.overlayElement.className = "game-overlay victory";
-            this.overlayElement.innerHTML = `
-                <h1>SYSTEM SECURED</h1>
-                <p>Final Recovered: ${this.score}MB</p>
-                <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
-            `;
-        } else if (this.state === "GAME_OVER") {
-            this.overlayElement.className = "game-overlay game-over";
-            this.overlayElement.innerHTML = `
-                <h1>SYSTEM COMPROMISED</h1>
-                <p>Score: ${this.score}MB</p>
-                <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
-            `;
-        }
+        this.overlayElement = updateOverlay(
+            this.world,
+            this.overlayElement,
+            this.state,
+            this.wave,
+            this.score,
+        );
     }
 }
