@@ -4,7 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make Your Game</title>
+    <title>System Override | Cyber Defense</title>
+
+    <!-- Google Fonts: Orbitron & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@600;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -15,11 +20,24 @@
     <div id="game-container">
         <!-- HUD -->
         <div id="game-hud">
-            <div class="hud-item">WAVE: <span id="wave-value">1</span></div>
-            <div class="hud-item">RECOVERED: <span id="score-value">0</span>MB</div>
-            <div class="hud-item">INTEGRITY: <span id="integrity-value">100</span>%</div>
-            <div class="hud-item">TIME: <span id="timer-value">60</span>s</div>
+            <div class="hud-item">
+                <span class="hud-label">WAVE</span>
+                <span id="wave-value" class="hud-value">1</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">RECOVERED</span>
+                <span class="hud-value"><span id="score-value">0</span> <small>MB</small></span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">INTEGRITY</span>
+                <span class="hud-value"><span id="integrity-value">100</span>%</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">TIME</span>
+                <span class="hud-value"><span id="timer-value">60</span> <small>s</small></span>
+            </div>
         </div>
+
         <div id="game-world"></div>
     </div>
 
