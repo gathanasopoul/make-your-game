@@ -71,7 +71,7 @@ export class Game {
 
     createEnemyGrid() {
         const startX = 80;
-        const startY = 60;
+        const startY = 70;
         const spacingX = 60;
         const spacingY = 60;
 

@@ -22,45 +22,66 @@ export function updateOverlay(world, overlayElement, state, wave, score) {
     if (state === "WAVE_CLEAR") {
         currentOverlay.className = "game-overlay wave-clear";
         currentOverlay.innerHTML = `
-            <h1 style="color: #00ffcc; text-shadow: 0 0 20px #00ffcc; font-size: 38px;">WAVE ${wave} CLEARED</h1>
-            <p style="color: #ffd54f; font-size: 18px; margin-top: 10px; font-weight: bold;">+20s SYSTEM RECOVERY BONUS</p>
-            <h2 style="color: #fff; font-size: 22px; margin-top: 24px; letter-spacing: 2px;">WAVE ${wave + 1} INCOMING...</h2>
+            <h1 class="overlay-title">WAVE ${wave} CLEARED</h1>
+            <p class="overlay-subtitle" style="color: #fbbf24; font-weight: 600;">+20s SYSTEM RECOVERY BONUS</p>
+            <div style="font-family: 'Orbitron', sans-serif; font-size: 18px; color: #38bdf8; letter-spacing: 1.5px; margin-top: 16px; font-weight: 700;">
+                WAVE ${wave + 1} INCOMING...
+            </div>
         `;
     } else if (state === "START") {
         currentOverlay.className = "game-overlay start";
         currentOverlay.innerHTML = `
-            <h1>SYSTEM OVERRIDE</h1>
-            <p style="margin-bottom: 20px; color: #00ffcc; font-size: 16px;">DEFEND THE SYSTEM AGAINST MALWARE INVASION</p>
-            <div style="font-size: 14px; line-height: 1.8; margin-bottom: 24px; text-align: left; background: rgba(0, 255, 204, 0.08); padding: 16px 24px; border: 1px solid #00ffcc; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);">
-                <div style="color: #fff; margin-bottom: 6px;">🎮 <strong>[A / D]</strong> or <strong>[← / →]</strong> : Move Spacecraft</div>
-                <div style="color: #fff; margin-bottom: 6px;">⚡ <strong>[SPACE]</strong> : Fire Anti-Malware Packets</div>
-                <div style="color: #fff; margin-bottom: 6px;">⏸️ <strong>[P / ESC]</strong> : Pause / Resume System</div>
-                <div style="color: #fff;">🔄 <strong>[R]</strong> : Reboot System</div>
+            <h1 class="overlay-title">SYSTEM OVERRIDE</h1>
+            <p class="overlay-subtitle">DEFEND THE SYSTEM AGAINST MALWARE INVASION</p>
+            
+            <div class="controls-card">
+                <div class="control-row">
+                    <span>Move Spacecraft</span>
+                    <div>
+                        <span class="key-badge">A</span> / <span class="key-badge">D</span> or <span class="key-badge">←</span> / <span class="key-badge">→</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span>Fire Anti-Malware</span>
+                    <span class="key-badge">SPACE</span>
+                </div>
+                <div class="control-row">
+                    <span>Pause System</span>
+                    <span class="key-badge">P</span> / <span class="key-badge">ESC</span>
+                </div>
+                <div class="control-row">
+                    <span>Reboot System</span>
+                    <span class="key-badge">R</span>
+                </div>
             </div>
-            <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.startGame()">INITIALIZE DEFENSE [SPACE]</button>
+
+            <button class="menu-btn menu-btn-primary" onclick="if(window.gameInstance) window.gameInstance.startGame()">
+                INITIALIZE DEFENSE [SPACE]
+            </button>
         `;
     } else if (state === "PAUSED") {
         currentOverlay.className = "game-overlay paused";
         currentOverlay.innerHTML = `
-            <h1>SYSTEM PAUSED</h1>
-            <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.togglePause()">Resume [P / ESC]</button>
+            <h1 class="overlay-title">SYSTEM PAUSED</h1>
+            <p class="overlay-subtitle">TACTICAL BREAK IN PROGRESS</p>
+            <button class="menu-btn menu-btn-primary" onclick="if(window.gameInstance) window.gameInstance.togglePause()">Resume [P / ESC]</button>
             <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
         `;
     } else if (state === "VICTORY") {
         currentOverlay.className = "game-overlay victory";
         currentOverlay.innerHTML = `
-            <h1>SYSTEM SECURED</h1>
-            <p>Final Recovered: ${score}MB</p>
-            <p style="font-size: 16px; color: #00ffcc; margin-top: 6px;">Reached Wave ${wave}</p>
-            <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
+            <h1 class="overlay-title">SYSTEM SECURED</h1>
+            <p class="overlay-subtitle">Recovered: <strong>${score} MB</strong></p>
+            <div style="font-size: 15px; color: #34d399; margin-bottom: 20px; font-weight: 600;">Reached Wave ${wave}</div>
+            <button class="menu-btn menu-btn-primary" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
         `;
     } else if (state === "GAME_OVER") {
         currentOverlay.className = "game-overlay game-over";
         currentOverlay.innerHTML = `
-            <h1>SYSTEM COMPROMISED</h1>
-            <p>Score: ${score}MB</p>
-            <p style="font-size: 16px; color: #ff0055; margin-top: 6px;">Reached Wave ${wave}</p>
-            <button class="menu-btn" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
+            <h1 class="overlay-title">SYSTEM COMPROMISED</h1>
+            <p class="overlay-subtitle">Data Recovered: <strong>${score} MB</strong></p>
+            <div style="font-size: 15px; color: #f43f5e; margin-bottom: 20px; font-weight: 600;">Reached Wave ${wave}</div>
+            <button class="menu-btn menu-btn-primary" onclick="if(window.gameInstance) window.gameInstance.restart()">Restart System [R]</button>
         `;
     }
 
