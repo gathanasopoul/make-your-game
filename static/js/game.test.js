@@ -92,6 +92,7 @@ describe("phase 5 projectile system", () => {
       };
 
       const game = new Game(world, { isPressed: (key) => key === "Space" });
+      game.startGame();
 
       game.update(0.016);
 
@@ -122,6 +123,7 @@ describe("phase 5 projectile system", () => {
       };
 
       const game = new Game(world, { isPressed: () => false });
+      game.startGame();
       const enemy = game.enemies[0];
       const projectile = game.projectilePool[0];
 
@@ -155,6 +157,7 @@ describe("phase 6 HUD & game logic", () => {
     try {
       const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
       const game = new Game(world, { isPressed: () => false });
+      game.startGame();
 
       expect(game.score).toBe(0);
       expect(game.timer).toBe(60);
@@ -178,6 +181,7 @@ describe("phase 6 HUD & game logic", () => {
     try {
       const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
       const game = new Game(world, { isPressed: () => false });
+      game.startGame();
 
       const breachEnemy = game.enemies[0];
       breachEnemy.y = 570; // 570 + 40 = 610 >= 600
@@ -190,7 +194,7 @@ describe("phase 6 HUD & game logic", () => {
     }
   });
 
-  it("transitions to VICTORY when all enemies are cleared", () => {
+  it("advances to next wave when all enemies are cleared", () => {
     const originalDocument = globalThis.document;
     globalThis.document = {
       createElement() {
@@ -201,6 +205,9 @@ describe("phase 6 HUD & game logic", () => {
     try {
       const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
       const game = new Game(world, { isPressed: () => false });
+      game.startGame();
+
+      expect(game.wave).toBe(1);
 
       for (const enemy of game.enemies) {
         enemy.deactivate();
@@ -208,8 +215,13 @@ describe("phase 6 HUD & game logic", () => {
       game.enemies = [];
 
       game.update(0.016);
+      expect(game.state).toBe("WAVE_CLEAR");
 
-      expect(game.state).toBe("VICTORY");
+      game.update(2.1);
+
+      expect(game.state).toBe("PLAYING");
+      expect(game.wave).toBe(2);
+      expect(game.enemies.length).toBeGreaterThan(0);
     } finally {
       globalThis.document = originalDocument;
     }
@@ -226,6 +238,7 @@ describe("phase 6 HUD & game logic", () => {
     try {
       const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
       const game = new Game(world, { isPressed: () => false, isJustPressed: () => false });
+      game.startGame();
 
       game.timer = 0.5;
       game.update(1.0);
@@ -259,6 +272,7 @@ describe("phase 7 pause & polish system", () => {
           return false;
         }
       });
+      game.startGame();
 
       expect(game.state).toBe("PLAYING");
 
@@ -298,7 +312,64 @@ describe("phase 7 pause & polish system", () => {
       expect(game.score).toBe(0);
       expect(game.integrity).toBe(100);
       expect(game.timer).toBe(60);
+      expect(game.wave).toBe(1);
       expect(game.enemies).toHaveLength(24);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it("handles player and enemy contact collision damage correctly", () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      createElement() {
+        return { style: {}, className: "", appendChild() {} };
+      }
+    };
+
+    try {
+      const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
+      const game = new Game(world, { isPressed: () => false });
+      game.startGame();
+
+      const enemy = game.enemies[0];
+      enemy.activate(game.player.x, game.player.y);
+
+      game.checkCollisions();
+
+      expect(enemy.active).toBe(false);
+      expect(game.integrity).toBe(75);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  it("launches enemy projectiles and damages player on hit", () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      createElement() {
+        return { style: {}, className: "", appendChild() {} };
+      }
+    };
+
+    try {
+      const world = { clientWidth: 800, clientHeight: 600, appendChild() {} };
+      const game = new Game(world, { isPressed: () => false, isJustPressed: () => false });
+      game.startGame();
+
+      game.fireEnemyProjectile();
+
+      expect(game.enemyProjectiles.length).toBeGreaterThan(0);
+      const enemyProj = game.enemyProjectiles[0];
+      expect(enemyProj.active).toBe(true);
+
+      enemyProj.x = game.player.x;
+      enemyProj.y = game.player.y;
+
+      game.checkCollisions();
+
+      expect(enemyProj.active).toBe(false);
+      expect(game.integrity).toBe(90);
     } finally {
       globalThis.document = originalDocument;
     }

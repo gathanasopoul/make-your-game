@@ -38,6 +38,11 @@ export class InputHandler {
             window.addEventListener("keyup", (e) => {
                 applyKeyState(this.keys, e, false);
             });
+
+            window.addEventListener("blur", () => {
+                this.keys = {};
+                this.justPressedKeys = {};
+            });
         }
     }
 
