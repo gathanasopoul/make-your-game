@@ -23,7 +23,7 @@ export function updateOverlay(world, overlayElement, state, wave, score) {
         currentOverlay.className = "game-overlay wave-clear";
         currentOverlay.innerHTML = `
             <h1 class="overlay-title">WAVE ${wave} CLEARED</h1>
-            <p class="overlay-subtitle" style="color: #fbbf24; font-weight: 600;">+20s SYSTEM RECOVERY BONUS</p>
+            <p class="overlay-subtitle" style="color: #34d399; font-weight: 600;">+20% SYSTEM INTEGRITY RECOVERED</p>
             <div style="font-family: 'Orbitron', sans-serif; font-size: 18px; color: #38bdf8; letter-spacing: 1.5px; margin-top: 16px; font-weight: 700;">
                 WAVE ${wave + 1} INCOMING...
             </div>

@@ -324,7 +324,8 @@ export class Game {
     nextWave() {
         this.wave++;
         this.enemySpeed = Math.min(350, this.enemySpeed + 20);
-        this.timer = Math.min(99, this.timer + 20);
+        this.integrity = Math.min(100, this.integrity + 20);
+        this.timer = 60;
         this.enemyFireTimer = 1.5;
 
         for (const projectile of this.projectiles) {
