@@ -51,25 +51,22 @@ export class InputHandler {
     }
 
     isJustPressed(keyCode) {
-        const raw = keyCode.startsWith("Key") ? keyCode.slice(3) : keyCode;
-        const aliases = [
-            keyCode,
-            keyCode.toLowerCase(),
-            raw,
-            raw.toLowerCase(),
-            raw.toUpperCase(),
-            "Key" + raw.toUpperCase()
-        ];
-
-        for (const id of aliases) {
-            if (this.justPressedKeys[id]) {
-                for (const alias of aliases) {
-                    delete this.justPressedKeys[alias];
-                }
+        if (this.justPressedKeys[keyCode]) {
+            delete this.justPressedKeys[keyCode];
+            return true;
+        }
+        const lower = keyCode.toLowerCase();
+        if (this.justPressedKeys[lower]) {
+            delete this.justPressedKeys[lower];
+            return true;
+        }
+        if (keyCode.startsWith("Key")) {
+            const raw = keyCode.slice(3);
+            if (this.justPressedKeys[raw]) {
+                delete this.justPressedKeys[raw];
                 return true;
             }
         }
-
         return false;
     }
 }

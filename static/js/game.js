@@ -143,15 +143,22 @@ export class Game {
             return;
         }
 
-        // Get bottom-most active enemy in each column to ensure clean front-line fire
-        const bottomEnemiesMap = {};
-        for (const enemy of activeEnemies) {
-            const colKey = Math.round(enemy.x);
-            if (!bottomEnemiesMap[colKey] || enemy.y > bottomEnemiesMap[colKey].y) {
-                bottomEnemiesMap[colKey] = enemy;
+        // Direct column grid check to get bottom-most active enemy in each column (zero map/object allocations)
+        const bottomEnemies = [];
+        for (let c = 0; c < this.enemyColumns; c++) {
+            for (let r = this.enemyRows - 1; r >= 0; r--) {
+                const enemy = this.enemies[r * this.enemyColumns + c];
+                if (enemy && enemy.active) {
+                    bottomEnemies.push(enemy);
+                    break;
+                }
             }
         }
-        const bottomEnemies = Object.values(bottomEnemiesMap);
+
+        if (bottomEnemies.length === 0) {
+            return;
+        }
+
         const shooter = bottomEnemies[Math.floor(Math.random() * bottomEnemies.length)];
 
         const x = shooter.x + shooter.width / 2 - projectile.width / 2;
@@ -389,10 +396,11 @@ export class Game {
         this.render();
     }
 
-    update(dt) {
-        const isJustPressed = (code) =>
-            typeof this.input.isJustPressed === "function" && this.input.isJustPressed(code);
+    isJustPressed(code) {
+        return typeof this.input.isJustPressed === "function" && this.input.isJustPressed(code);
+    }
 
+    update(dt) {
         if (this.state === "WAVE_CLEAR") {
             this.waveClearTimer -= dt;
             if (this.waveClearTimer <= 0) {
@@ -403,17 +411,17 @@ export class Game {
         }
 
         if (this.state === "START") {
-            if (isJustPressed("Space") || isJustPressed("Enter") || (typeof this.input.isPressed === "function" && this.input.isPressed("Space"))) {
+            if (this.isJustPressed("Space") || this.isJustPressed("Enter") || (typeof this.input.isPressed === "function" && this.input.isPressed("Space"))) {
                 this.startGame();
             }
             return;
         }
 
-        if (isJustPressed("Escape") || isJustPressed("KeyP")) {
+        if (this.isJustPressed("Escape") || this.isJustPressed("KeyP")) {
             this.togglePause();
         }
 
-        if (isJustPressed("KeyR")) {
+        if (this.isJustPressed("KeyR")) {
             this.restart();
             return;
         }
