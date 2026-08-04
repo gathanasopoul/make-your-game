@@ -5,8 +5,8 @@ export class Enemy {
         this.width = 40;
         this.height = 40;
 
-        this.x = 0;
-        this.y = 0;
+        this.x = -9999;
+        this.y = -9999;
 
         this.active = false;
 
@@ -41,7 +41,7 @@ export class Enemy {
 
         this.active = true;
 
-        this.element.style.display = "block";
+        this.element.style.visibility = "visible";
 
         this.render();
     }
@@ -55,7 +55,8 @@ export class Enemy {
 
     // Hide enemy
     hide() {
-        this.element.style.display = "none";
+        this.element.style.visibility = "hidden";
+        this.element.style.transform = "translate3d(-9999px, -9999px, 0px)";
     }
 
     // Move enemy
@@ -74,7 +75,6 @@ export class Enemy {
             return;
         }
 
-        this.element.style.transform =
-            `translate(${this.x}px, ${this.y}px)`;
+        this.element.style.transform = `translate3d(${this.x}px, ${this.y}px, 0px)`;
     }
 }
