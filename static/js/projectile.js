@@ -7,8 +7,8 @@ export class Projectile {
         this.height = 14;
         this.speed = isEnemy ? 250 : 400;
 
-        this.x = -9999;
-        this.y = -9999;
+        this.x = 0;
+        this.y = 0;
         this.active = false;
 
         this.element = document.createElement("div");
@@ -35,13 +35,12 @@ export class Projectile {
         this.x = x;
         this.y = y;
         this.active = true;
-        this.element.style.visibility = "visible";
+        this.element.style.display = "block";
         this.render();
     }
 
     hide() {
-        this.element.style.visibility = "hidden";
-        this.element.style.transform = "translate3d(-9999px, -9999px, 0px)";
+        this.element.style.display = "none";
     }
 
     move(dt) {
@@ -75,9 +74,9 @@ export class Projectile {
         }
 
         if (this.isEnemy) {
-            this.element.style.transform = `translate3d(${this.x}px, ${this.y}px, 0px) rotate(180deg)`;
+            this.element.style.transform = `translate(${this.x}px, ${this.y}px) rotate(180deg)`;
         } else {
-            this.element.style.transform = `translate3d(${this.x}px, ${this.y}px, 0px)`;
+            this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
         }
     }
 }

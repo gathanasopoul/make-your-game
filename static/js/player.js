@@ -53,6 +53,7 @@ export class Player {
 
     // Render player
     render() {
-        this.element.style.transform = `translate3d(${this.x}px, ${this.y}px, 0px)`;
+        this.element.style.transform =
+            `translate(${this.x}px, ${this.y}px)`;
     }
 }
