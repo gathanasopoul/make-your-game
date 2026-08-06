@@ -19,11 +19,20 @@ export function updateOverlay(world, overlayElement, state, wave, score) {
         }
     }
 
+    const stateKey = `${state}_${wave}_${score}`;
+    if (currentOverlay.dataset && currentOverlay.dataset.renderedState === stateKey) {
+        return currentOverlay;
+    }
+    if (!currentOverlay.dataset) {
+        currentOverlay.dataset = {};
+    }
+    currentOverlay.dataset.renderedState = stateKey;
+
     if (state === "WAVE_CLEAR") {
         currentOverlay.className = "game-overlay wave-clear";
         currentOverlay.innerHTML = `
             <h1 class="overlay-title">WAVE ${wave} CLEARED</h1>
-            <p class="overlay-subtitle" style="color: #34d399; font-weight: 600;">+20% SYSTEM INTEGRITY RECOVERED</p>
+            <p class="overlay-subtitle" style="color: #34d399; font-weight: 600;">+1 ANTIVIRUS SHIELD RECOVERED</p>
             <div style="font-family: 'Orbitron', sans-serif; font-size: 18px; color: #38bdf8; letter-spacing: 1.5px; margin-top: 16px; font-weight: 700;">
                 WAVE ${wave + 1} INCOMING...
             </div>
@@ -37,21 +46,27 @@ export function updateOverlay(world, overlayElement, state, wave, score) {
             <div class="controls-card">
                 <div class="control-row">
                     <span>Move Spacecraft</span>
-                    <div>
+                    <div class="key-group">
                         <span class="key-badge">A</span> / <span class="key-badge">D</span> or <span class="key-badge">←</span> / <span class="key-badge">→</span>
                     </div>
                 </div>
                 <div class="control-row">
                     <span>Fire Anti-Malware</span>
-                    <span class="key-badge">SPACE</span>
+                    <div class="key-group">
+                        <span class="key-badge">SPACE</span>
+                    </div>
                 </div>
                 <div class="control-row">
                     <span>Pause System</span>
-                    <span class="key-badge">P</span> / <span class="key-badge">ESC</span>
+                    <div class="key-group">
+                        <span class="key-badge">P</span> / <span class="key-badge">ESC</span>
+                    </div>
                 </div>
                 <div class="control-row">
                     <span>Reboot System</span>
-                    <span class="key-badge">R</span>
+                    <div class="key-group">
+                        <span class="key-badge">R</span>
+                    </div>
                 </div>
             </div>
 

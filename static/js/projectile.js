@@ -34,6 +34,8 @@ export class Projectile {
     activate(x, y) {
         this.x = x;
         this.y = y;
+        this.lastX = null;
+        this.lastY = null;
         this.active = true;
         this.element.style.display = "block";
         this.render();
@@ -43,14 +45,13 @@ export class Projectile {
         this.element.style.display = "none";
     }
 
-    move(dt) {
+    move(dt, worldHeight = 600) {
         if (!this.active) {
             return;
         }
 
         if (this.isEnemy) {
             this.y += Math.abs(this.speed) * dt;
-            const worldHeight = (this.world && this.world.clientHeight) ? this.world.clientHeight : 600;
             if (this.y > worldHeight) {
                 this.deactivate();
             }
@@ -73,10 +74,20 @@ export class Projectile {
             return;
         }
 
+        const rx = Math.round(this.x);
+        const ry = Math.round(this.y);
+
+        if (rx === this.lastX && ry === this.lastY) {
+            return;
+        }
+
+        this.lastX = rx;
+        this.lastY = ry;
+
         if (this.isEnemy) {
-            this.element.style.transform = `translate(${this.x}px, ${this.y}px) rotate(180deg)`;
+            this.element.style.transform = `translate(${rx}px, ${ry}px) rotate(180deg)`;
         } else {
-            this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
+            this.element.style.transform = `translate(${rx}px, ${ry}px)`;
         }
     }
 }

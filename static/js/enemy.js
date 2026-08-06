@@ -39,6 +39,9 @@ export class Enemy {
         this.x = x;
         this.y = y;
 
+        this.lastX = null;
+        this.lastY = null;
+
         this.active = true;
 
         this.element.style.display = "block";
@@ -74,7 +77,15 @@ export class Enemy {
             return;
         }
 
-        this.element.style.transform =
-            `translate(${this.x}px, ${this.y}px)`;
+        const rx = Math.round(this.x);
+        const ry = Math.round(this.y);
+
+        if (rx === this.lastX && ry === this.lastY) {
+            return;
+        }
+
+        this.lastX = rx;
+        this.lastY = ry;
+        this.element.style.transform = `translate(${rx}px, ${ry}px)`;
     }
 }

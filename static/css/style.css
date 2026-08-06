@@ -42,6 +42,8 @@ body {
     width: 100%;
     height: 100%;
     position: relative;
+    contain: layout paint style;
+    transform: translateZ(0);
 }
 
 /* Web 2.0 Glossy HUD */
@@ -90,6 +92,23 @@ body {
     font-size: 11px;
     margin-left: 2px;
     color: #64748b;
+}
+
+.hud-shields {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.shield-icon {
+    width: 18px;
+    height: 18px;
+    color: #00ffcc;
+}
+
+.shield-icon.lost {
+    color: #334155;
+    opacity: 0.35;
 }
 
 /* Web 2.0 Overlay Cards */
@@ -168,6 +187,13 @@ body {
     color: #cbd5e1;
 }
 
+.key-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+}
+
 .key-badge {
     display: inline-block;
     background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
@@ -235,8 +261,7 @@ body {
     height: 40px;
     background: #0284c7;
     border-radius: 6px;
-    filter: drop-shadow(0 4px 8px rgba(2, 132, 199, 0.4));
-    will-change: transform;
+    box-shadow: 0 4px 8px rgba(2, 132, 199, 0.4);
 }
 
 .enemy {
@@ -247,8 +272,7 @@ body {
     height: 40px;
     background: #e11d48;
     border-radius: 6px;
-    filter: drop-shadow(0 4px 8px rgba(225, 29, 72, 0.4));
-    will-change: transform;
+    box-shadow: 0 4px 8px rgba(225, 29, 72, 0.4);
 }
 
 .projectile {
@@ -259,13 +283,12 @@ body {
     height: 14px;
     background: #fbbf24;
     border-radius: 3px;
-    filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.5));
-    will-change: transform;
+    box-shadow: 0 2px 4px rgba(251, 191, 36, 0.5);
 }
 
 .enemy-projectile {
     background: #f43f5e;
-    filter: drop-shadow(0 2px 4px rgba(244, 63, 94, 0.5));
+    box-shadow: 0 2px 4px rgba(244, 63, 94, 0.5);
 }
 
 svg {

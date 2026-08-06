@@ -11,18 +11,28 @@ export function applyKeyState(keys, event, isPressed, justPressedKeys = null) {
     const key = event.key || "";
     const primary = code || key;
 
+    const lowerCode = code ? code.toLowerCase() : "";
+    const lowerKey = key ? key.toLowerCase() : "";
+    const rawCode = code && code.startsWith("Key") ? code.slice(3) : "";
+    const lowerRawCode = rawCode ? rawCode.toLowerCase() : "";
+
     if (isPressed && !keys[primary] && justPressedKeys) {
         justPressedKeys[primary] = true;
+        if (code) justPressedKeys[code] = true;
+        if (key) justPressedKeys[key] = true;
+        if (lowerCode) justPressedKeys[lowerCode] = true;
+        if (lowerKey) justPressedKeys[lowerKey] = true;
+        if (rawCode) justPressedKeys[rawCode] = true;
+        if (lowerRawCode) justPressedKeys[lowerRawCode] = true;
     }
 
     keys[primary] = isPressed;
-    if (code) {
-        keys[code] = isPressed;
-    }
-    if (key) {
-        keys[key] = isPressed;
-        keys[key.toLowerCase()] = isPressed;
-    }
+    if (code) keys[code] = isPressed;
+    if (key) keys[key] = isPressed;
+    if (lowerCode) keys[lowerCode] = isPressed;
+    if (lowerKey) keys[lowerKey] = isPressed;
+    if (rawCode) keys[rawCode] = isPressed;
+    if (lowerRawCode) keys[lowerRawCode] = isPressed;
 }
 
 export class InputHandler {
@@ -31,11 +41,23 @@ export class InputHandler {
         this.justPressedKeys = {};
 
         if (typeof window !== "undefined" && window.addEventListener) {
+            const preventKeys = new Set(["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyA", "KeyD", "KeyP", "KeyR", "Escape", "Enter", " "]);
+
             window.addEventListener("keydown", (e) => {
+                if (preventKeys.has(e.code) || preventKeys.has(e.key)) {
+                    if (typeof e.preventDefault === "function") {
+                        e.preventDefault();
+                    }
+                }
                 applyKeyState(this.keys, e, true, this.justPressedKeys);
             });
 
             window.addEventListener("keyup", (e) => {
+                if (preventKeys.has(e.code) || preventKeys.has(e.key)) {
+                    if (typeof e.preventDefault === "function") {
+                        e.preventDefault();
+                    }
+                }
                 applyKeyState(this.keys, e, false);
             });
 
@@ -46,26 +68,19 @@ export class InputHandler {
         }
     }
 
+    clear() {
+        this.keys = {};
+        this.justPressedKeys = {};
+    }
+
     isPressed(keyCode) {
-        return !!this.keys[keyCode] || !!this.keys[keyCode.toLowerCase()];
+        return !!this.keys[keyCode];
     }
 
     isJustPressed(keyCode) {
         if (this.justPressedKeys[keyCode]) {
-            delete this.justPressedKeys[keyCode];
+            this.justPressedKeys[keyCode] = false;
             return true;
-        }
-        const lower = keyCode.toLowerCase();
-        if (this.justPressedKeys[lower]) {
-            delete this.justPressedKeys[lower];
-            return true;
-        }
-        if (keyCode.startsWith("Key")) {
-            const raw = keyCode.slice(3);
-            if (this.justPressedKeys[raw]) {
-                delete this.justPressedKeys[raw];
-                return true;
-            }
         }
         return false;
     }

@@ -32,7 +32,8 @@ export class Game {
         this.state = "START";
         this.wave = 1;
         this.score = 0;
-        this.integrity = 100;
+        this.lives = 3;
+        this.maxLives = 3;
         this.timer = 60;
         this.overlayElement = null;
 
@@ -43,8 +44,8 @@ export class Game {
         this.scoreEl = typeof globalThis.document !== "undefined" && globalThis.document.getElementById
             ? globalThis.document.getElementById("score-value")
             : null;
-        this.integrityEl = typeof globalThis.document !== "undefined" && globalThis.document.getElementById
-            ? globalThis.document.getElementById("integrity-value")
+        this.shieldsEl = typeof globalThis.document !== "undefined" && globalThis.document.getElementById
+            ? globalThis.document.getElementById("shields-value")
             : null;
         this.timerEl = typeof globalThis.document !== "undefined" && globalThis.document.getElementById
             ? globalThis.document.getElementById("timer-value")
@@ -52,13 +53,18 @@ export class Game {
 
         this.lastWave = -1;
         this.lastScore = -1;
-        this.lastIntegrity = -1;
+        this.lastLives = -1;
         this.lastTimer = -1;
+
+        this.cachedWorldWidth = (this.world && this.world.clientWidth) ? this.world.clientWidth : 800;
+        this.cachedWorldHeight = (this.world && this.world.clientHeight) ? this.world.clientHeight : 600;
+        this.bottomEnemiesBuffer = [];
 
         this.createEnemyPool();
         this.createEnemyGrid();
         this.createProjectilePool();
         this.createEnemyProjectilePool();
+        this.render();
     }
 
     createEnemyPool() {
@@ -133,33 +139,28 @@ export class Game {
             return;
         }
 
-        const activeEnemies = this.enemies.filter((enemy) => enemy.active);
-        if (activeEnemies.length === 0) {
-            return;
-        }
-
         const projectile = this.enemyProjectilePool.find((item) => !item.active);
         if (!projectile) {
             return;
         }
 
         // Direct column grid check to get bottom-most active enemy in each column (zero map/object allocations)
-        const bottomEnemies = [];
+        this.bottomEnemiesBuffer.length = 0;
         for (let c = 0; c < this.enemyColumns; c++) {
             for (let r = this.enemyRows - 1; r >= 0; r--) {
                 const enemy = this.enemies[r * this.enemyColumns + c];
                 if (enemy && enemy.active) {
-                    bottomEnemies.push(enemy);
+                    this.bottomEnemiesBuffer.push(enemy);
                     break;
                 }
             }
         }
 
-        if (bottomEnemies.length === 0) {
+        if (this.bottomEnemiesBuffer.length === 0) {
             return;
         }
 
-        const shooter = bottomEnemies[Math.floor(Math.random() * bottomEnemies.length)];
+        const shooter = this.bottomEnemiesBuffer[Math.floor(Math.random() * this.bottomEnemiesBuffer.length)];
 
         const x = shooter.x + shooter.width / 2 - projectile.width / 2;
         const y = shooter.y + shooter.height;
@@ -176,25 +177,29 @@ export class Game {
     }
 
     updateProjectiles(dt) {
+        const worldHeight = this.getWorldHeight();
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             const projectile = this.projectiles[i];
 
             if (!projectile.active) {
-                this.projectiles.splice(i, 1);
+                this.projectiles[i] = this.projectiles[this.projectiles.length - 1];
+                this.projectiles.pop();
             } else {
-                projectile.move(dt);
+                projectile.move(dt, worldHeight);
             }
         }
     }
 
     updateEnemyProjectiles(dt) {
+        const worldHeight = this.getWorldHeight();
         for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
             const projectile = this.enemyProjectiles[i];
 
             if (!projectile.active) {
-                this.enemyProjectiles.splice(i, 1);
+                this.enemyProjectiles[i] = this.enemyProjectiles[this.enemyProjectiles.length - 1];
+                this.enemyProjectiles.pop();
             } else {
-                projectile.move(dt);
+                projectile.move(dt, worldHeight);
             }
         }
     }
@@ -225,8 +230,6 @@ export class Game {
                     projectile.deactivate();
                     enemy.deactivate();
                     this.score += 10;
-                    this.projectiles.splice(i, 1);
-                    this.enemies.splice(j, 1);
                     break;
                 }
             }
@@ -250,8 +253,7 @@ export class Game {
 
             if (hitPlayer || reachedBaseline) {
                 enemy.deactivate();
-                this.enemies.splice(j, 1);
-                this.integrity = Math.max(0, this.integrity - 25);
+                this.lives = Math.max(0, this.lives - 1);
             }
         }
 
@@ -271,18 +273,23 @@ export class Game {
 
             if (hitPlayer) {
                 projectile.deactivate();
-                this.enemyProjectiles.splice(i, 1);
-                this.integrity = Math.max(0, this.integrity - 10);
+                this.lives = Math.max(0, this.lives - 1);
             }
         }
     }
 
     getWorldWidth() {
-        return (this.world && this.world.clientWidth) ? this.world.clientWidth : 800;
+        if (!this.cachedWorldWidth && this.world && this.world.clientWidth) {
+            this.cachedWorldWidth = this.world.clientWidth;
+        }
+        return this.cachedWorldWidth || 800;
     }
 
     getWorldHeight() {
-        return (this.world && this.world.clientHeight) ? this.world.clientHeight : 600;
+        if (!this.cachedWorldHeight && this.world && this.world.clientHeight) {
+            this.cachedWorldHeight = this.world.clientHeight;
+        }
+        return this.cachedWorldHeight || 600;
     }
 
     moveEnemies(dt) {
@@ -291,6 +298,7 @@ export class Game {
         const worldHeight = this.getWorldHeight();
 
         for (const enemy of this.enemies) {
+            if (!enemy.active) continue;
             const nextX = enemy.x + this.enemySpeed * this.enemyDirection * dt;
 
             if (nextX <= 0 || nextX + enemy.width >= worldWidth) {
@@ -303,23 +311,26 @@ export class Game {
             this.enemyDirection *= -1;
 
             for (const enemy of this.enemies) {
-                enemy.move(0, this.enemyDropDistance);
+                if (enemy.active) {
+                    enemy.move(0, this.enemyDropDistance);
+                }
             }
 
             return;
         }
 
         for (const enemy of this.enemies) {
-            enemy.move(this.enemySpeed * this.enemyDirection * dt);
+            if (enemy.active) {
+                enemy.move(this.enemySpeed * this.enemyDirection * dt);
+            }
         }
 
         // Check if any enemy reached bottom of game world
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
-            if (enemy.y + enemy.height >= worldHeight) {
+            if (enemy.active && enemy.y + enemy.height >= worldHeight) {
                 enemy.deactivate();
-                this.enemies.splice(i, 1);
-                this.integrity = Math.max(0, this.integrity - 25);
+                this.lives = Math.max(0, this.lives - 1);
             }
         }
     }
@@ -331,7 +342,7 @@ export class Game {
     nextWave() {
         this.wave++;
         this.enemySpeed = Math.min(350, this.enemySpeed + 20);
-        this.integrity = Math.min(100, this.integrity + 20);
+        this.lives = Math.min(this.maxLives || 3, this.lives + 1);
         this.timer = 60;
         this.enemyFireTimer = 1.5;
 
@@ -360,10 +371,10 @@ export class Game {
     }
 
     restart() {
-        this.state = "PLAYING";
+        this.state = "START";
         this.wave = 1;
         this.score = 0;
-        this.integrity = 100;
+        this.lives = 3;
         this.timer = 60;
         this.fireTimer = 0;
         this.enemyFireTimer = 1.5;
@@ -393,6 +404,10 @@ export class Game {
         this.player.x = (worldWidth - this.player.width) / 2;
         this.player.y = worldHeight - this.player.height - 20;
 
+        if (this.input && typeof this.input.clear === "function") {
+            this.input.clear();
+        }
+
         this.render();
     }
 
@@ -411,8 +426,15 @@ export class Game {
         }
 
         if (this.state === "START") {
-            if (this.isJustPressed("Space") || this.isJustPressed("Enter") || (typeof this.input.isPressed === "function" && this.input.isPressed("Space"))) {
+            if (this.isJustPressed("Space") || this.isJustPressed("Enter")) {
                 this.startGame();
+            }
+            return;
+        }
+
+        if (this.state === "GAME_OVER" || this.state === "VICTORY") {
+            if (this.isJustPressed("Space") || this.isJustPressed("Enter") || this.isJustPressed("KeyR")) {
+                this.restart();
             }
             return;
         }
@@ -456,14 +478,16 @@ export class Game {
 
         this.timer = Math.max(0, this.timer - dt);
 
-        this.player.move(dx, 0, dt);
+        const worldWidth = this.getWorldWidth();
+        const worldHeight = this.getWorldHeight();
+        this.player.move(dx, 0, dt, worldWidth, worldHeight);
         this.moveEnemies(dt);
         this.updateProjectiles(dt);
         this.updateEnemyProjectiles(dt);
         this.checkCollisions();
 
         // Check state transitions
-        if (this.integrity <= 0 || this.timer <= 0) {
+        if (this.lives <= 0 || this.timer <= 0) {
             this.state = "GAME_OVER";
         } else if (this.enemies.length === 0 || this.enemies.every((e) => !e.active)) {
             this.state = "WAVE_CLEAR";
@@ -501,9 +525,20 @@ export class Game {
             this.lastScore = this.score;
         }
 
-        if (this.integrityEl && this.integrity !== this.lastIntegrity) {
-            this.integrityEl.textContent = this.integrity;
-            this.lastIntegrity = this.integrity;
+        if (!this.shieldsEl && typeof globalThis.document !== "undefined" && globalThis.document.getElementById) {
+            this.shieldsEl = globalThis.document.getElementById("shields-value");
+        }
+
+        if (this.shieldsEl && this.lives !== this.lastLives) {
+            let html = "";
+            for (let i = 0; i < this.maxLives; i++) {
+                const active = i < this.lives;
+                html += `<svg class="shield-icon ${active ? '' : 'lost'}" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8s0 0 0 0z"/>
+                </svg>`;
+            }
+            this.shieldsEl.innerHTML = html;
+            this.lastLives = this.lives;
         }
 
         const ceilTimer = Math.ceil(this.timer);
@@ -514,6 +549,18 @@ export class Game {
     }
 
     renderOverlay() {
+        if (
+            this.lastOverlayState === this.state &&
+            this.lastOverlayWave === this.wave &&
+            this.lastOverlayScore === this.score
+        ) {
+            return;
+        }
+
+        this.lastOverlayState = this.state;
+        this.lastOverlayWave = this.wave;
+        this.lastOverlayScore = this.score;
+
         this.overlayElement = updateOverlay(
             this.world,
             this.overlayElement,

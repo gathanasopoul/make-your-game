@@ -35,11 +35,8 @@ export class Player {
     }
 
     // Move player horizontally
-    move(dx, dy, dt) {
+    move(dx, dy, dt, worldWidth = 800, worldHeight = 600) {
         this.x += dx * this.speed * dt;
-
-        const worldWidth = this.world.clientWidth || 800;
-        const worldHeight = this.world.clientHeight || 600;
 
         // Keep inside horizontal game area
         this.x = Math.max(
@@ -53,7 +50,15 @@ export class Player {
 
     // Render player
     render() {
-        this.element.style.transform =
-            `translate(${this.x}px, ${this.y}px)`;
+        const rx = Math.round(this.x);
+        const ry = Math.round(this.y);
+
+        if (rx === this.lastX && ry === this.lastY) {
+            return;
+        }
+
+        this.lastX = rx;
+        this.lastY = ry;
+        this.element.style.transform = `translate(${rx}px, ${ry}px)`;
     }
 }

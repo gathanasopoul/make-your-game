@@ -170,7 +170,7 @@ describe("phase 6 HUD & game logic", () => {
     }
   });
 
-  it("decreases integrity when enemy reaches bottom boundary", () => {
+  it("decreases lives when enemy reaches bottom boundary", () => {
     const originalDocument = globalThis.document;
     globalThis.document = {
       createElement() {
@@ -188,7 +188,7 @@ describe("phase 6 HUD & game logic", () => {
 
       game.moveEnemies(0.01);
 
-      expect(game.integrity).toBe(75);
+      expect(game.lives).toBe(2);
     } finally {
       globalThis.document = originalDocument;
     }
@@ -227,7 +227,7 @@ describe("phase 6 HUD & game logic", () => {
     }
   });
 
-  it("transitions to GAME_OVER when timer reaches zero or integrity reaches zero", () => {
+  it("transitions to GAME_OVER when timer reaches zero or lives reach zero", () => {
     const originalDocument = globalThis.document;
     globalThis.document = {
       createElement() {
@@ -302,15 +302,15 @@ describe("phase 7 pause & polish system", () => {
       const game = new Game(world, { isPressed: () => false, isJustPressed: () => false });
 
       game.score = 150;
-      game.integrity = 25;
+      game.lives = 1;
       game.timer = 12;
       game.state = "GAME_OVER";
 
       game.restart();
 
-      expect(game.state).toBe("PLAYING");
+      expect(game.state).toBe("START");
       expect(game.score).toBe(0);
-      expect(game.integrity).toBe(100);
+      expect(game.lives).toBe(3);
       expect(game.timer).toBe(60);
       expect(game.wave).toBe(1);
       expect(game.enemies).toHaveLength(24);
@@ -338,7 +338,7 @@ describe("phase 7 pause & polish system", () => {
       game.checkCollisions();
 
       expect(enemy.active).toBe(false);
-      expect(game.integrity).toBe(75);
+      expect(game.lives).toBe(2);
     } finally {
       globalThis.document = originalDocument;
     }
@@ -369,7 +369,7 @@ describe("phase 7 pause & polish system", () => {
       game.checkCollisions();
 
       expect(enemyProj.active).toBe(false);
-      expect(game.integrity).toBe(90);
+      expect(game.lives).toBe(2);
     } finally {
       globalThis.document = originalDocument;
     }

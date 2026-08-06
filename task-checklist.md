@@ -42,11 +42,11 @@ Use this file to track progress for the current development tasks.
 
 ## Phase 6: HUD & Game Logic
 - [x] Add score tracking
-- [x] Add lives/system integrity display
+- [x] Add 3 antivirus shield lives display
 - [x] Add countdown timer
 - [x] Implement game-over and victory states
 
-> Verified: score tracking, system integrity, countdown timer, and victory/game-over states are fully functional and covered by unit tests.
+> Verified: score tracking, 3 antivirus shield lives, countdown timer, and victory/game-over states are fully functional and covered by unit tests.
 
 ## Phase 7: Pause & Polish
 - [x] Add pause menu and pause state handling
