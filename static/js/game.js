@@ -337,6 +337,9 @@ export class Game {
 
     startGame() {
         this.state = "PLAYING";
+        if (this.input && typeof this.input.clear === "function") {
+            this.input.clear();
+        }
     }
 
     nextWave() {
@@ -428,6 +431,7 @@ export class Game {
         if (this.state === "START") {
             if (this.isJustPressed("Space") || this.isJustPressed("Enter")) {
                 this.startGame();
+                this.fireTimer = 0.25;
             }
             return;
         }
