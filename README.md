@@ -6,7 +6,7 @@
 
 ## 🎮 Game Concept & Controls
 
-Defend the central mainframe against invading waves of malware packets. Move your firewall spacecraft, deploy anti-malware laser packets, avoid incoming enemy fire, and prevent malware from reaching the system baseline.
+Defend the central mainframe against invading waves of malware packets. Move your firewall spacecraft, deploy anti-malware laser packets, avoid incoming enemy fire, and protect your 3 Antivirus Shields from malware breach.
 
 | Action | Control Key |
 | :--- | :--- |
@@ -20,20 +20,24 @@ Defend the central mainframe against invading waves of malware packets. Move you
 ## ✨ Features
 
 - **Zero Frameworks & No `<canvas>`**: Built 100% with plain HTML, CSS, and ES6 JavaScript Modules.
+- **3 Antivirus Shield Lives System**:
+  - Top dashboard displays **3 Antivirus Shield SVG icons** (`SHIELDS`).
+  - Active shields glow cyan (`#00ffcc`), transitioning to dimmed outlines when damaged by enemy lasers, ship collisions, or baseline breaches.
+  - Clearing a wave recovers **+1 Antivirus Shield** (up to max 3).
+- **Start Screen & Anti-Flicker Menu Workflow**:
+  - Full game state machine (`START`, `PLAYING`, `PAUSED`, `WAVE_CLEAR`, `VICTORY`, `GAME_OVER`).
+  - Menu input protection prevents key bleed-over on game over / restart and guarantees zero accidental shots when starting defense.
 - **60 FPS Performance Optimization**:
   - Uses `requestAnimationFrame` for a smooth game loop.
-  - Animate entities using GPU-composited CSS `transform: translate3d(x, y, 0px)` and `will-change: transform`.
-  - Zero layout reflows during active frame rendering.
+  - Animate entities using GPU-composited CSS `transform: translate3d(x, y, 0px)` and hardware layer promotion on `#game-world`.
+  - Zero layout reflows and zero DOM allocations during active frame rendering.
 - **Memory Management & Object Pooling**:
   - Pre-allocated pools for enemies (`enemyPool`), player projectiles (`projectilePool`), and enemy projectiles (`enemyProjectilePool`).
-  - Reuses DOM elements to eliminate garbage collection (GC) pauses.
-- **State Machine & Wave Progression**:
-  - Full game state management (`START`, `PLAYING`, `PAUSED`, `WAVE_CLEAR`, `VICTORY`, `GAME_OVER`).
-  - Escalating wave difficulty with speed scaling and wave-clear recovery bonuses.
+  - Reuses DOM elements and performs $O(1)$ swap-and-pop array updates to eliminate garbage collection (GC) pauses.
 - **Dynamic Front-Line Enemy Fire**:
-  - Bottom-row enemies launch downward laser projectiles at random intervals.
+  - Bottom-row enemies launch downward laser projectiles at randomized, wave-scaling intervals.
 - **Web 2.0 Dark Slate Visual Design**:
-  - Responsive container layout with Google Fonts (`Orbitron` & `Inter`), glossy slate cards, and single-line HUD status badges.
+  - Responsive container layout with Google Fonts (`Orbitron` & `Inter`), glossy slate control cards, and clean HUD status badges.
 
 ---
 
